@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Clone</title>
+    <!-- Inline CSS for styling -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #181818;
+            color: #fff;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #202020;
+        }
+
+        .logo img {
+            height: 25px;
+        }
+
+        .search-bar {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            margin: 0 20px;
+        }
+
+        .search-bar input {
+            width: 60%;
+            padding: 8px;
+            border: 1px solid #444;
+            border-radius: 3px;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        .search-bar button {
+            padding: 8px;
+            border: none;
+            background-color: #FF0000;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-left: 10px;
+        }
+
+        .icons i {
+            margin: 0 10px;
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .category-tabs {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background-color: #202020;
+        }
+
+        .tab {
+            padding: 10px 15px;
+            background-color: #121212;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background-color: #FF0000;
+        }
+
+        .video-section, .shorts-section {
+            padding: 20px;
+        }
+
+        .video-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .video-item {
+            background-color: #202020;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .video-item iframe {
+            width: 100%;
+            height: 180px;
+        }
+
+        .video-item h3 {
+            padding: 10px;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .shorts-list {
+            display: flex;
+            overflow-x: scroll;
+        }
+
+        .short-item {
+            width: 150px;
+            background-color: #202020;
+            border-radius: 10px;
+            margin-right: 15px;
+        }
+
+        .short-item img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: #202020;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background-color: transparent;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .footer-tab i {
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b8/YouTube_Logo_2017.svg" alt="YouTube Logo">
+        </div>
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search">
+            <button id="search-button">Search</button>
+        </div>
+        <div class="icons">
+            <i class="fas fa-bell"></i>
+            <i class="fas fa-user"></i>
+        </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="category-tabs">
+        <button class="tab active" data-category="all">All</button>
+        <button class="tab" data-category="music">Music</button>
+        <button class="tab" data-category="gaming">Gaming</button>
+        <button class="tab" data-category="news">News</button>
+        <button class="tab" data-category="sports">Sports</button>
+    </nav>
+
+    <!-- Video Container -->
+    <div class="video-section">
+        <div class="video-list" id="video-list"></div>
+    </div>
+
+    <!-- Shorts Section -->
+    <div class="shorts-section">
+        <h2>Shorts</h2>
+        <div class="shorts-list" id="shorts-list"></div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <nav>
+            <button class="footer-tab active"><i class="fas fa-home"></i> Home</button>
+            <button class="footer-tab"><i class="fas fa-video"></i> Shorts</button>
+            <button class="footer-tab"><i class="fas fa-plus"></i></button>
+            <button class="footer-tab"><i class="fas fa-play"></i> Subscriptions</button>
+            <button class="footer-tab"><i class="fas fa-user"></i> You</button>
+        </nav>
+    </footer>
+
+    <!-- Inline JavaScript for functionality -->
+    <script>
+        // YouTube API Key
+        const API_KEY = 'YOUR_YOUTUBE_API_KEY';
+
+        // Selectors
+        const videoList = document.getElementById('video-list');
+        const shortsList = document.getElementById('shorts-list');
+        const searchButton = document.getElementById('search-button');
+        const searchInput = document.getElementById('search-input');
+
+        // Search for videos on button click
+        searchButton.addEventListener('click', () => {
+            const query = searchInput.value;
+            if (query) {
+                fetchVideos(query);
+            }
+        });
+
+        // Fetch videos from YouTube API
+        function fetchVideos(query) {
+            fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&key=${API_KEY}&maxResults=10`)
+                .then(response => response.json())
+                .then(data => {
+                    displayVideos(data.items);
+                })
+                .catch(error => console.error('Error fetching videos:', error));
+        }
+
+        // Display videos in the video list
+        function displayVideos(videos) {
+            videoList.innerHTML = ''; // Clear previous videos
+            videos.forEach(video => {
+                const videoElement = document.createElement('div');
+                videoElement.classList.add('video-item');
+                videoElement.innerHTML = `
+                    <iframe src="https://www.youtube.com/embed/${video.id.videoId}" frameborder="0" allowfullscreen></iframe>
+                    <h3>${video.snippet.title}</h3>
+                `;
+                videoList.appendChild(videoElement);
+            });
+        }
+
+        // Fetch short videos (using hardcoded popular video IDs for now)
+        function fetchShorts() {
+            const shorts = ['n1WpP7iowLc', 'lTTajzrSkCw', 'UOxkGD8qRB4']; // Add popular video IDs for demo
+            shortsList.innerHTML = '';
+            shorts.forEach(shortId => {
+                const shortElement = document.createElement('div');
+                shortElement.classList.add('short-item');
+                shortElement.innerHTML = `
+                    <img src="https://img.youtube.com/vi/${shortId}/hqdefault.jpg" alt="Short Thumbnail">
+                `;
+                shortsList.appendChild(shortElement);
+            });
+        }
+
+        // Load popular shorts on page load
+        window.onload = () => {
+            fetchShorts();
+        };
+    </script>
+    <script src="https://apis.google.com/js/api.js"></script>
+</body>
+</html>
